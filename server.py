@@ -4,13 +4,17 @@ import threading
 
 class CommunicatorServer:
     def __init__(self):
+        # server socket
         self.server = None
+        # list of clients sockets
         self.clients = []
 
     def start_server(self):
+        # create server socket
         self.server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.server.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
 
+        # port and host address
         host = "localhost"
         port = 55555
 
@@ -23,6 +27,7 @@ class CommunicatorServer:
 
         print(f"Server is running on {host}:{port}.")
 
+        # thread for accept clients
         threading.Thread(target=self.accept_clients).start()
 
     def accept_clients(self):
@@ -37,6 +42,7 @@ class CommunicatorServer:
             try:
                 message = client_socket.recv(1024)
                 if message:
+                    # send to every client
                     for client in self.clients:
                         if client != client_socket:
                             client.send(message)

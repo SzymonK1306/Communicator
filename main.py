@@ -14,7 +14,7 @@ class CommunicatorMainWindow(QMainWindow):
         layout = QVBoxLayout()
 
         start_server_button = QPushButton(text="Start Server")
-        # start_server_button.setText(QString("Start Server"))
+        # start_server_button.setText("Start Server")
         start_server_button.clicked.connect(self.start_server)
         layout.addWidget(start_server_button)
 

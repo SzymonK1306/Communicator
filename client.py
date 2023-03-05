@@ -5,17 +5,20 @@ from PySide6.QtWidgets import QApplication, QDialog, QLineEdit, QTextEdit, QVBox
 
 
 class CommunicatorClient(QDialog):
+    client_number = 0
     def __init__(self, parent=None):
         super().__init__(parent)
 
         self.setWindowTitle("Communicator Client")
         self.setGeometry(300, 300, 400, 300)
 
+        # window to read messages
         layout = QVBoxLayout()
         self.text_edit = QTextEdit()
         self.text_edit.setReadOnly(True)
         layout.addWidget(self.text_edit)
 
+        # inserting messages
         self.edit_line = QLineEdit()
         send_button = QPushButton("Send")
         send_button.clicked.connect(self.send_message)
@@ -27,9 +30,12 @@ class CommunicatorClient(QDialog):
 
         self.setLayout(layout)
 
+        CommunicatorClient.client_number += 1
+
         self.socket = None
         self.host = "localhost"
         self.port = 55555
+        self.name = 'Client' + str(CommunicatorClient.client_number)
 
         self.connect_to_server()
 
