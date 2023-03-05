@@ -5,28 +5,30 @@ from PySide6.QtCore import QThread
 from PySide6.QtWidgets import QApplication, QDialog, QLineEdit, QTextEdit, QVBoxLayout, QHBoxLayout, QPushButton, \
     QFileDialog
 from PIL import Image
-import io
 
 
 class CommunicatorClient(QDialog):
     def __init__(self, parent=None):
         super().__init__(parent)
 
-        self.setWindowTitle("Communicator Client")
-        self.setGeometry(300, 300, 800, 700)
+        self.setWindowTitle("Client")
+        self.setGeometry(200, 200, 800, 700)
 
+        # Chat box
         layout = QVBoxLayout()
         self.text_edit = QTextEdit()
-        self.text_edit.setFont(QtGui.QFont("Courier", 9))
+        self.text_edit.setFont(QtGui.QFont("Courier", 9))       # font for better ASCII-art displaying
         self.text_edit.setReadOnly(True)
         layout.addWidget(self.text_edit)
 
+        # Line to enter messages
         self.edit_line = QLineEdit()
         send_button = QPushButton("Send")
         send_button.clicked.connect(self.send_message)
         upload_button = QPushButton("Upload Image")
-        upload_button.clicked.connect(self.upload_image)
+        upload_button.clicked.connect(self.convert_image)
 
+        # Layout
         bottom_layout = QHBoxLayout()
         bottom_layout.addWidget(self.edit_line)
         bottom_layout.addWidget(send_button)
@@ -37,19 +39,22 @@ class CommunicatorClient(QDialog):
 
         self.socket = None
         self.host = "localhost"
-        self.port = 55555
+        self.port = 11000
 
         self.connect_to_server()
 
     def connect_to_server(self):
+        # create self socket object
         self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 
+        # Connection
         try:
             self.socket.connect((self.host, self.port))
         except socket.error as e:
             print(str(e))
             sys.exit()
 
+        # Receiving messages from others
         self.receive_thread = ReceiveThread(self.socket, self)
         self.receive_thread.start()
 
@@ -59,7 +64,8 @@ class CommunicatorClient(QDialog):
         self.text_edit.append(f"Me: {self.edit_line.text()}")
         self.edit_line.clear()
 
-    def upload_image(self):
+    # upload image and convert to ASCII_art
+    def convert_image(self):
         filename, _ = QFileDialog.getOpenFileName(self, "Open Image File", ".", "Images (*.png *.jpg *.jpeg *.bmp)")
         if filename:
             image = Image.open(filename)
@@ -84,27 +90,10 @@ class CommunicatorClient(QDialog):
             new_pixels_count = len(new_pixels)
             ascii_image = [new_pixels[index:index + new_width] for index in range(0, new_pixels_count, new_width)]
             ascii_image = "\n".join(ascii_image)
-            # with open(filename, "rb") as file:
-            #     image_data = file.read()
-            # ascii_art = self.convert_to_ascii(image_data)
+
             message = ascii_image.encode()
             self.socket.sendall(message)
             self.text_edit.append("Me: [Image]")
-
-    # def convert_to_ascii(self, img_bytes, width=500):
-    #     image = Image.open(io.BytesIO(img_bytes))
-    #     w, h = image.size
-    #     new_h = int(h * (width / float(w)))
-    #     scaled_image = image.resize((width, new_h)).convert('L')
-    #
-    #     # Define the ASCII characters to represent different shades of gray
-    #     ascii_chars = ["@", "#", "S", "%", "?", "*", "+", ";", ":", ",", "."]
-    #
-    #     # Convert each pixel to an ASCII character
-    #     ascii_pixels = "".join([ascii_chars[pixel // 25] for pixel in scaled_image.getdata()])
-    #     ascii_text = "\n".join([ascii_pixels[i:i + width] for i in range(0, len(ascii_pixels), width)])
-    #
-    #     return ascii_text
 
 
 class ReceiveThread(QThread):

@@ -16,8 +16,9 @@ class CommunicatorServer:
 
         # port and host address
         host = "localhost"
-        port = 55555
+        port = 11000
 
+        # server start
         try:
             self.server.bind((host, port))
         except socket.error as e:
@@ -25,7 +26,9 @@ class CommunicatorServer:
 
         self.server.listen()
 
-        print(f"Server is running on {host}:{port}.")
+        print(f"Server is running")
+        print(f'Host: {host}')
+        print(f'Port: {port}')
 
         # thread for accept clients
         threading.Thread(target=self.accept_clients).start()
@@ -42,7 +45,8 @@ class CommunicatorServer:
             try:
                 message = client_socket.recv(2020)
                 if message:
-                    # send to every client
+                    # send to every client (except sender)
+                    # broadcast
                     for client in self.clients:
                         if client != client_socket:
                             client.send(message)
@@ -52,3 +56,7 @@ class CommunicatorServer:
                     break
             except:
                 continue
+
+    def stop(self):
+        self.running = False
+
