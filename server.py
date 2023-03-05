@@ -40,7 +40,7 @@ class CommunicatorServer:
     def handle_client(self, client_socket):
         while True:
             try:
-                message = client_socket.recv(1024)
+                message = client_socket.recv(2020)
                 if message:
                     # send to every client
                     for client in self.clients:
